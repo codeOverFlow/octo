@@ -18,6 +18,10 @@ createMain() {
    echo '}' >> src/main.cpp;
 }
 
+createGitignore() {
+   echo "build/" >> .gitignore;
+}
+
 COMMAND="DEFAULT";
 EXTENSION="DEFAULT";
 
@@ -52,11 +56,19 @@ then
    then
       echo "\033[1;31mError: ${EXTENSION} already exists.\033[0m";
    else
+      echo "\033[1;32mInfo\033[0m: Creating directories...";
       mkdir ${EXTENSION} ${EXTENSION}/src ${EXTENSION}/include ${EXTENSION}/build;
       cd $EXTENSION;
+      echo "\033[1;32mInfo\033[0m: Creating CMakeLists...";
       createCMake $EXTENSION;
+      echo "\033[1;32mInfo\033[0m: Creating Hello World...";
       createMain;
-      git init;
+      echo "\033[1;32mInfo\033[0m: Initializing Git...";
+      createGitignore;
+      git init -q;
+      git add .;
+      git commit -q -am 'OctoCommit: Initial commit';
+      echo "\033[1;32mInfo\033[0m: All setup done !";
    fi
 else
    if [ -d build/ ]
