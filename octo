@@ -34,7 +34,7 @@ do
          COMMAND="$key"
          ;;
       *)
-         if [ ${COMMAND} = "" ]
+         if [ ${COMMAND} = "DEFAULT" ]
          then
             echo "\033[1;31mError: command ${key} does not exists.\033[0m";
             exit 1;
