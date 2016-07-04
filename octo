@@ -1,0 +1,89 @@
+#!/bin/sh
+
+createCMake() {
+   echo "cmake_minimum_required(VERSION 3.0)" >> CMakeLists.txt;
+   echo "project(${1})" >> CMakeLists.txt;
+   echo 'set(EXECUTABLE_OUTPUT_PATH bin/${CMAKE_BUILD_TYPE})' >> CMakeLists.txt;
+   echo 'file(GLOB_RECURSE sources "src/*.c*")' >> CMakeLists.txt;
+   echo 'file(GLOB_RECURSE headers "include/*.h*")' >> CMakeLists.txt;
+   echo "add_executable(${1}" '${sources} ${headers})' >> CMakeLists.txt; 
+}
+
+createMain() {
+   echo '#include <cstdlib>' >> src/main.cpp;
+   echo '#include <iostream>' >> src/main.cpp;
+   echo 'int main (void) {' >> src/main.cpp;
+   echo "\tstd::cout" '<< "Hello World !" << std::endl;' >> src/main.cpp;
+   echo "\treturn" 'EXIT_SUCCESS;' >> src/main.cpp;
+   echo '}' >> src/main.cpp;
+}
+
+COMMAND="DEFAULT";
+EXTENSION="DEFAULT";
+
+while [ $# -gt 0 ]
+do
+   key="$1"
+   case $key in
+      new)
+         COMMAND="$key"
+         EXTENSION="$2"
+         shift # past argument
+         ;;
+      build|run)
+         COMMAND="$key"
+         ;;
+      *)
+         if [ ${COMMAND} = "" ]
+         then
+            echo "\033[1;31mError: command ${key} does not exists.\033[0m";
+            exit 1;
+         else
+            EXTENSION="$key"
+         fi
+         ;;
+   esac
+   shift # past argument or value
+done
+
+if [ $COMMAND = "new" ]
+then
+   if [ -d $EXTENSION ]
+   then
+      echo "\033[1;31mError: ${EXTENSION} already exists.\033[0m";
+   else
+      mkdir ${EXTENSION} ${EXTENSION}/src ${EXTENSION}/include ${EXTENSION}/build;
+      cd $EXTENSION;
+      createCMake $EXTENSION;
+      createMain;
+      git init;
+   fi
+else
+   if [ -d build/ ]
+   then
+      cd build/;
+   else
+      mkdir build/;
+      cd build/;
+   fi
+   if [ $EXTENSION = "release" ]
+   then
+      cmake -DCMAKE_BUILD_TYPE=Release ..;
+      make;
+      if [ $COMMAND = 'run' ]
+      then
+         name=`cat ../CMakeLists.txt | grep "project" | egrep -o "\(.+\)" | egrep -o "[^()]+"`;
+         ./bin/Release/${name};
+      fi
+   else
+      cmake -DCMAKE_BUILD_TYPE=Debug ..;
+      make;
+      if [ $COMMAND = 'run' ]
+      then
+         name=`cat ../CMakeLists.txt | grep "project" | egrep -o "\(.+\)" | egrep -o "[^()]+"`;
+         ./bin/Debug/${name};
+      fi
+   fi
+fi
+
+exit 0;
