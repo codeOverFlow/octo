@@ -11,3 +11,6 @@ Build project
 
 Build and run
 ```$ octo run [release]```
+
+# Install
+Put it in your ```/bin``` or add it to your ```$PATH```
