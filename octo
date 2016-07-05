@@ -3,10 +3,20 @@
 createCMake() {
    echo "cmake_minimum_required(VERSION 3.0)" >> CMakeLists.txt;
    echo "project(${1})" >> CMakeLists.txt;
-   echo 'set(EXECUTABLE_OUTPUT_PATH bin/${CMAKE_BUILD_TYPE})' >> CMakeLists.txt;
+
    echo 'file(GLOB_RECURSE sources "src/*.c*")' >> CMakeLists.txt;
    echo 'file(GLOB_RECURSE headers "include/*.h*")' >> CMakeLists.txt;
-   echo "add_executable(${1}" '${sources} ${headers})' >> CMakeLists.txt; 
+   echo "set(EXECUTABLE_OUTPUT"_'PATH bin/${CMAKE_BUILD_TYPE})' >> CMakeLists.txt;
+   echo 'include_directories(${CMAKE_CURREND_SOURCE_DIR}/include)' >> CMakeLists.txt;
+   echo '' >> CMakeLists.txt;
+   echo '# add a lib' >> CMakeLists.txt;
+   echo '# set (LLIB_LIB libllib.so)' >> CMakeLists.txt;
+   echo '# link_directories(path/to/lib)' >> CMakeLists.txt;
+   echo '# include_directories(path/to/headers)' >> CMakeLists.txt;
+
+   echo "add_executable(${1}" '${sources})' >> CMakeLists.txt; 
+
+   echo '# target_lin_libraries(exe ${LLIB_LIB})' >> CMakeLists.txt;
 }
 
 createMain() {
@@ -24,6 +34,7 @@ createGitignore() {
 
 COMMAND="DEFAULT";
 EXTENSION="DEFAULT";
+SPECIFIER="--bin";
 
 while [ $# -gt 0 ]
 do
@@ -38,7 +49,7 @@ do
          COMMAND="$key"
          ;;
       *)
-         if [ ${COMMAND} = "DEFAULT" ]
+         if [ ${COMMAND} = "DEFAULT" -o ${EXTENSION} = "DEFAULT" ]
          then
             echo "\033[1;31mError: command ${key} does not exists.\033[0m";
             exit 1;
@@ -71,6 +82,7 @@ then
       echo "\033[1;32mInfo\033[0m: All setup done !";
    fi
 else
+   rm -f build/CMakeCache.txt;
    if [ -d build/ ]
    then
       cd build/;
@@ -80,18 +92,26 @@ else
    fi
    if [ $EXTENSION = "release" ]
    then
-      cmake -DCMAKE_BUILD_TYPE=Release ..;
-      make;
-      if [ $COMMAND = 'run' ]
+      if [ $COMMAND = "build" ]
       then
+         cmake -DCMAKE_BUILD_TYPE=Release ..;
+         make;
+      elif [ $COMMAND = 'run' ]
+      then
+         cmake -DCMAKE_BUILD_TYPE=Release ..;
+         make;
          name=`cat ../CMakeLists.txt | grep "project" | egrep -o "\(.+\)" | egrep -o "[^()]+"`;
          ./bin/Release/${name};
       fi
    else
-      cmake -DCMAKE_BUILD_TYPE=Debug ..;
-      make;
-      if [ $COMMAND = 'run' ]
+      if [ $COMMAND = "build" ]
       then
+         cmake -DCMAKE_BUILD_TYPE=Debug ..;
+         make;
+      elif [ $COMMAND = 'run' ]
+      then
+         cmake -DCMAKE_BUILD_TYPE=Debug ..;
+         make;
          name=`cat ../CMakeLists.txt | grep "project" | egrep -o "\(.+\)" | egrep -o "[^()]+"`;
          ./bin/Debug/${name};
       fi
